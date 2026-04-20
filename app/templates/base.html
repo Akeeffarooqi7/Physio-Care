@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="{{ config.CLINIC_NAME }} - Expert physiotherapy care by {{ config.DOCTOR_NAME }}. Book your appointment today.">
+    <meta name="keywords" content="physiotherapy, back pain, neck pain, knee pain, sports injury, rehabilitation, {{ config.CLINIC_NAME }}">
+    <meta name="theme-color" content="#2563eb">
+    <title>{% block title %}{{ config.CLINIC_NAME }} | Expert Physiotherapy Care{% endblock %}</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- AOS Animate on Scroll -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+    <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">
+            <div class="brand-logo">
+                <div class="brand-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">PhysioCare</span>
+                    <span class="brand-tagline">Heal • Move • Thrive</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="toggler-icon"><span></span><span></span><span></span></span>
+        </button>
+
+        <!-- Nav Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}" href="{{ url_for('main.about') }}">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'treatment' in request.endpoint %}active{% endif %}" href="{{ url_for('main.treatments') }}">Treatments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.health_guidance' %}active{% endif %}" href="{{ url_for('main.health_guidance') }}">Health Guide</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.testimonials' %}active{% endif %}" href="{{ url_for('main.testimonials') }}">Reviews</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.contact' %}active{% endif %}" href="{{ url_for('main.contact') }}">Contact</a>
+                </li>
+
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle user-menu" href="#" data-bs-toggle="dropdown">
+                            <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] if current_user.last_name else '' }}</div>
+                            {{ current_user.first_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% if current_user.role in ['admin', 'doctor'] %}
+                                <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('doctor.dashboard') }}"><i class="fas fa-user-md me-2"></i>Doctor Panel</a></li>
+                            {% else %}
+                                <li><a class="dropdown-item" href="{{ url_for('patient.dashboard') }}"><i class="fas fa-user me-2"></i>My Dashboard</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                    </li>
+                {% endif %}
+
+                <!-- Theme Toggle -->
+                <li class="nav-item">
+                    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                </li>
+
+                <!-- CTA Button -->
+                <li class="nav-item">
+                    <a class="btn btn-primary nav-cta" href="{{ url_for('appointments.book') }}">
+                        <i class="fas fa-calendar-plus me-1"></i> Book Now
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== FLASH MESSAGES ===== -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container" id="flashContainer">
+            {% for category, message in messages %}
+                <div class="flash-alert flash-{{ category }}" role="alert">
+                    <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="flash-close" onclick="this.parentElement.remove()">×</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<!-- ===== MAIN CONTENT ===== -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="footer-wave">
+        <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="var(--footer-bg)"/>
+        </svg>
+    </div>
+    <div class="footer-body">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="footer-brand">
+                        <div class="brand-logo mb-3">
+                            <div class="brand-icon brand-icon-sm">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <div class="brand-text">
+                                <span class="brand-name">PhysioCare</span>
+                                <span class="brand-tagline">Heal • Move • Thrive</span>
+                            </div>
+                        </div>
+                        <p class="footer-desc">Expert physiotherapy care dedicated to helping you heal better and move freely. We combine evidence-based treatments with compassionate care.</p>
+                        <div class="social-links">
+                            <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://wa.me/{{ config.WHATSAPP_NUMBER }}" class="social-link social-wa" aria-label="WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h6 class="footer-heading">Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                        <li><a href="{{ url_for('main.about') }}">About Doctor</a></li>
+                        <li><a href="{{ url_for('main.treatments') }}">Treatments</a></li>
+                        <li><a href="{{ url_for('main.health_guidance') }}">Health Guide</a></li>
+                        <li><a href="{{ url_for('appointments.book') }}">Book Appointment</a></li>
+                        <li><a href="{{ url_for('main.testimonials') }}">Patient Reviews</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h6 class="footer-heading">Treatments</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('main.treatment_detail', slug='back-pain-relief') }}">Back Pain</a></li>
+                        <li><a href="{{ url_for('main.treatment_detail', slug='neck-pain-treatment') }}">Neck Pain</a></li>
+                        <li><a href="{{ url_for('main.treatment_detail', slug='knee-pain-rehabilitation') }}">Knee Pain</a></li>
+                        <li><a href="{{ url_for('main.treatment_detail', slug='frozen-shoulder') }}">Frozen Shoulder</a></li>
+                        <li><a href="{{ url_for('main.treatment_detail', slug='sports-injury-rehabilitation') }}">Sports Injuries</a></li>
+                        <li><a href="{{ url_for('main.treatment_detail', slug='sciatica-treatment') }}">Sciatica</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h6 class="footer-heading">Contact Info</h6>
+                    <ul class="footer-contact">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ config.CLINIC_ADDRESS }}</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:{{ config.CLINIC_PHONE }}">{{ config.CLINIC_PHONE }}</a>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:{{ config.CLINIC_EMAIL }}">{{ config.CLINIC_EMAIL }}</a>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span>Mon–Fri: 9AM–6PM<br>Sat: 9AM–2PM</span>
+                        </li>
+                    </ul>
+                    <a href="https://wa.me/{{ config.WHATSAPP_NUMBER }}?text=Hello%20PhysioCare%2C%20I%20need%20help"
+                       class="btn btn-wa w-100 mt-3" target="_blank">
+                        <i class="fab fa-whatsapp me-2"></i>Chat on WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="footer-copy">© 2024 {{ config.CLINIC_NAME }}. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="footer-copy">Designed with <i class="fas fa-heart text-danger"></i> for better health</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ===== AI CHATBOT ===== -->
+<div class="chatbot-wrapper" id="chatbotWrapper">
+    <div class="chatbot-bubble" id="chatbotBubble" onclick="toggleChatbot()">
+        <div class="chatbot-icon">
+            <i class="fas fa-robot" id="chatbotOpenIcon"></i>
+            <i class="fas fa-times d-none" id="chatbotCloseIcon"></i>
+        </div>
+        <div class="chatbot-badge" id="chatbotBadge">1</div>
+    </div>
+    <div class="chatbot-panel" id="chatbotPanel">
+        <div class="chatbot-header">
+            <div class="chatbot-avatar">
+                <i class="fas fa-robot"></i>
+                <div class="chatbot-online"></div>
+            </div>
+            <div class="chatbot-info">
+                <h6>PhysioBot</h6>
+                <span>AI Health Assistant</span>
+            </div>
+            <button class="chatbot-minimize" onclick="toggleChatbot()">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chat-msg bot">
+                <div class="msg-avatar"><i class="fas fa-robot"></i></div>
+                <div class="msg-bubble">
+                    <p>Hello! I'm <strong>PhysioBot</strong> 🤖 — your virtual physiotherapy assistant.</p>
+                    <p>Tell me about your pain or symptoms, and I'll provide guidance on exercises, diet, and when to see a doctor.</p>
+                    <div class="quick-replies">
+                        <button onclick="sendQuickReply('Back pain')">Back Pain</button>
+                        <button onclick="sendQuickReply('Neck pain')">Neck Pain</button>
+                        <button onclick="sendQuickReply('Knee pain')">Knee Pain</button>
+                        <button onclick="sendQuickReply('Book appointment')">Book Appt</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-disclaimer">
+            <i class="fas fa-shield-alt me-1"></i>
+            Not a medical diagnosis. Always consult a doctor.
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Describe your symptoms..." maxlength="500"
+                   onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <button onclick="sendChatMessage()" id="chatSendBtn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FLOATING BUTTONS ===== -->
+<div class="floating-actions">
+    <a href="tel:{{ config.CLINIC_PHONE }}" class="fab-btn fab-call" title="Call Us">
+        <i class="fas fa-phone"></i>
+    </a>
+    <a href="https://wa.me/{{ config.WHATSAPP_NUMBER }}?text=Hello%20PhysioCare" target="_blank"
+       class="fab-btn fab-whatsapp" title="WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% block extra_js %}{% endblock %}
+
+<script>
+AOS.init({ duration: 700, easing: 'ease-out-cubic', once: true, offset: 80 });
+</script>
+</body>
+</html>

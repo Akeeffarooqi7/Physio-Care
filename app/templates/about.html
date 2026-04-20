@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}About Dr. Johnson | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+
+<section class="about-hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5" data-aos="fade-right">
+        <div class="doctor-frame">
+          <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe,#bfdbfe);border-radius:24px;
+                       padding:50px 30px;text-align:center;box-shadow:var(--shadow-xl);position:relative;z-index:2;">
+            <div style="width:150px;height:150px;background:linear-gradient(135deg,#2563eb,#10b981);
+                         border-radius:50%;display:flex;align-items:center;justify-content:center;
+                         margin:0 auto 20px;box-shadow:0 20px 40px rgba(37,99,235,0.3);">
+              <i class="fas fa-user-md" style="font-size:70px;color:white;"></i>
+            </div>
+            <h3 style="color:#1e293b;margin-bottom:4px;">{{ config.DOCTOR_NAME }}</h3>
+            <p style="color:#64748b;font-size:14px;margin-bottom:20px;">{{ config.DOCTOR_SPECIALTY }}</p>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+              <span style="background:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#2563eb;border:1px solid #bfdbfe;">PhD Physiotherapy</span>
+              <span style="background:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#10b981;border:1px solid #a7f3d0;">Sports Medicine</span>
+              <span style="background:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#8b5cf6;border:1px solid #c4b5fd;">Manual Therapy</span>
+            </div>
+          </div>
+
+          <div class="cert-badge cb-1" data-aos="fade-up" data-aos-delay="200">
+            <i class="fas fa-award" style="color:#f59e0b;font-size:24px;"></i>
+            <div>
+              <div style="font-size:13px;font-weight:700;">Board Certified</div>
+              <div style="font-size:11px;color:var(--text-muted);">Since 2009</div>
+            </div>
+          </div>
+          <div class="cert-badge cb-2" data-aos="fade-up" data-aos-delay="300">
+            <i class="fas fa-star" style="color:#f59e0b;font-size:24px;"></i>
+            <div>
+              <div style="font-size:13px;font-weight:700;">4.9/5 Rating</div>
+              <div style="font-size:11px;color:var(--text-muted);">500+ Reviews</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7" data-aos="fade-left">
+        <div class="section-tag"><i class="fas fa-user-md"></i> Meet Your Specialist</div>
+        <h1 class="section-title mt-2">{{ config.DOCTOR_NAME }}</h1>
+        <p class="section-subtitle mb-4">{{ config.DOCTOR_SPECIALTY }}</p>
+        <p style="color:var(--text-secondary);font-size:16px;line-height:1.8;margin-bottom:20px;">
+          With over 15 years of clinical experience, Dr. Sarah Johnson has helped thousands of patients
+          recover from acute injuries, chronic pain conditions, and post-surgical rehabilitation. Her approach
+          combines the latest evidence-based physiotherapy with a compassionate, patient-centered philosophy.
+        </p>
+        <p style="color:var(--text-secondary);font-size:16px;line-height:1.8;margin-bottom:30px;">
+          Dr. Johnson has worked with professional athletes, corporate executives, and everyday people
+          — treating each patient as a unique individual deserving of the highest standard of care.
+        </p>
+
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{{ url_for('appointments.book') }}" class="btn btn-primary btn-lg-custom">
+            <i class="fas fa-calendar-plus me-2"></i>Book Consultation
+          </a>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-ghost btn-lg-custom">
+            <i class="fas fa-envelope me-2"></i>Contact Us
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Qualifications -->
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-6" data-aos="fade-right">
+        <div class="section-tag"><i class="fas fa-graduation-cap"></i> Education</div>
+        <h3 class="section-title mt-2 mb-4">Qualifications & <span>Certifications</span></h3>
+        <ul class="qual-list">
+          {% for qual in [
+            ('fa-graduation-cap', 'PhD in Physiotherapy', 'Harvard Medical School, 2008'),
+            ('fa-certificate', 'Master of Sports Medicine', 'Johns Hopkins University, 2006'),
+            ('fa-star', 'Certified Manual Therapist', 'IFOMPT Certified, 2010'),
+            ('fa-running', 'Sports Rehabilitation Specialist', 'NASM Certified, 2011'),
+            ('fa-brain', 'Pain Management Certificate', 'ISAP Certified, 2015'),
+            ('fa-video', 'Telehealth Physiotherapy', 'APA Certified, 2020')
+          ] %}
+          <li>
+            <div class="qual-icon"><i class="fas {{ qual[0] }}"></i></div>
+            <div>
+              <div style="font-weight:600;font-size:15px;margin-bottom:3px;">{{ qual[1] }}</div>
+              <div style="font-size:13px;color:var(--text-muted);">{{ qual[2] }}</div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="col-lg-6" data-aos="fade-left">
+        <div class="section-tag"><i class="fas fa-chart-line"></i> Expertise</div>
+        <h3 class="section-title mt-2 mb-4">Areas of <span>Specialization</span></h3>
+        <div class="row g-3">
+          {% for spec, pct in [
+            ('Back & Spine Rehabilitation', 95),
+            ('Sports Injury Recovery', 92),
+            ('Post-Surgical Rehab', 90),
+            ('Frozen Shoulder Treatment', 95),
+            ('Knee Rehabilitation', 88),
+            ('Pain Management', 94)
+          ] %}
+          <div class="col-12">
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-size:14px;font-weight:600;">{{ spec }}</span>
+              <span style="font-size:14px;color:var(--primary);font-weight:700;">{{ pct }}%</span>
+            </div>
+            <div style="height:8px;background:var(--border);border-radius:999px;overflow:hidden;">
+              <div style="height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));
+                           border-radius:999px;width:{{ pct }}%;transition:width 1.5s ease;" data-width="{{ pct }}"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="section-sm" style="background:var(--bg-secondary);">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-8" data-aos="zoom-in">
+        <div class="section-tag mx-auto"><i class="fas fa-heart"></i> Our Mission</div>
+        <h2 class="section-title mt-3">"Every patient deserves to move freely and live without pain"</h2>
+        <p class="section-subtitle mx-auto mt-3">
+          My mission is simple: to provide the highest quality, evidence-based physiotherapy that
+          empowers patients to take control of their recovery, understand their bodies, and achieve
+          lasting freedom from pain.
+        </p>
+        <div class="d-flex gap-3 justify-content-center mt-4 flex-wrap">
+          <div class="card-premium text-center" style="min-width:130px;">
+            <div style="font-size:32px;font-weight:900;color:var(--primary);">5000+</div>
+            <div style="font-size:13px;color:var(--text-muted);">Patients Helped</div>
+          </div>
+          <div class="card-premium text-center" style="min-width:130px;">
+            <div style="font-size:32px;font-weight:900;color:var(--secondary);">98%</div>
+            <div style="font-size:13px;color:var(--text-muted);">Success Rate</div>
+          </div>
+          <div class="card-premium text-center" style="min-width:130px;">
+            <div style="font-size:32px;font-weight:900;color:var(--accent);">15+</div>
+            <div style="font-size:13px;color:var(--text-muted);">Years Experience</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

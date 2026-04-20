@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+<div style="padding-top:80px;min-height:100vh;background:var(--bg-secondary);">
+  <div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h4 class="mb-0">Welcome, {{ current_user.first_name }}! 👋</h4>
+        <p class="text-muted mb-0" style="font-size:14px;">Your personal health dashboard</p>
+      </div>
+      <a href="{{ url_for('appointments.book') }}" class="btn btn-primary">
+        <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+      </a>
+    </div>
+
+    <div class="row g-4">
+      <!-- Appointments -->
+      <div class="col-lg-8">
+        <div class="card-premium">
+          <h5 class="mb-4"><i class="fas fa-calendar-check text-primary me-2"></i>My Appointments</h5>
+          {% if appointments %}
+          <div class="table-responsive">
+            <table class="table mb-0" style="font-size:14px;">
+              <thead>
+                <tr style="color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">
+                  <th class="border-0 pb-2">#</th>
+                  <th class="border-0 pb-2">Date</th>
+                  <th class="border-0 pb-2">Time</th>
+                  <th class="border-0 pb-2">Type</th>
+                  <th class="border-0 pb-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in appointments %}
+                <tr style="border-color:var(--border);">
+                  <td class="py-3 text-muted">#{{ a.id }}</td>
+                  <td class="py-3">{{ a.preferred_date.strftime('%b %d, %Y') }}</td>
+                  <td class="py-3">{{ a.preferred_time }}</td>
+                  <td class="py-3">
+                    <span style="font-size:13px;">
+                      <i class="fas {% if a.appointment_type == 'video' %}fa-video text-success{% else %}fa-hospital text-primary{% endif %} me-1"></i>
+                      {{ a.appointment_type.title() }}
+                    </span>
+                  </td>
+                  <td class="py-3">
+                    <span class="status-badge status-{{ a.status }}">{{ a.status.title() }}</span>
+                    {% if a.status == 'confirmed' and a.video_link and a.appointment_type == 'video' %}
+                    <a href="{{ a.video_link }}" target="_blank" class="btn btn-sm ms-2"
+                       style="background:var(--secondary);color:white;border-radius:20px;padding:3px 10px;font-size:12px;">
+                      <i class="fas fa-video me-1"></i>Join
+                    </a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-calendar fa-3x mb-3" style="color:var(--text-muted);opacity:0.3;"></i>
+            <p class="text-muted mb-3">No appointments yet</p>
+            <a href="{{ url_for('appointments.book') }}" class="btn btn-primary">
+              <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="card-premium mb-4">
+          <div class="text-center mb-3">
+            <div style="width:70px;height:70px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+                         border-radius:50%;display:flex;align-items:center;justify-content:center;
+                         color:white;font-size:26px;font-weight:700;margin:0 auto 12px;">
+              {{ current_user.first_name[0] }}{{ current_user.last_name[0] if current_user.last_name else '' }}
+            </div>
+            <h6>{{ current_user.full_name }}</h6>
+            <p style="font-size:13px;color:var(--text-muted);">{{ current_user.email }}</p>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between py-1">
+              <span style="font-size:13px;color:var(--text-muted);">Total Appointments</span>
+              <strong>{{ appointments|length }}</strong>
+            </div>
+            <div class="d-flex justify-content-between py-1">
+              <span style="font-size:13px;color:var(--text-muted);">Completed</span>
+              <strong>{{ appointments|selectattr('status', 'equalto', 'completed')|list|length }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card-premium">
+          <h6 class="mb-3">Quick Actions</h6>
+          <div class="d-flex flex-column gap-2">
+            <a href="{{ url_for('appointments.book') }}" class="btn btn-primary">
+              <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+            </a>
+            <a href="{{ url_for('main.health_guidance') }}" class="btn btn-ghost">
+              <i class="fas fa-dumbbell me-2"></i>Exercise Guide
+            </a>
+            <a href="{{ url_for('main.treatments') }}" class="btn btn-ghost">
+              <i class="fas fa-stethoscope me-2"></i>View Treatments
+            </a>
+            <a href="{{ url_for('main.contact') }}" class="btn btn-ghost">
+              <i class="fas fa-envelope me-2"></i>Contact Us
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

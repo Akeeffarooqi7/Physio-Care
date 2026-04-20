@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Chat History | Admin{% endblock %}
+{% block content %}
+<div style="padding-top:80px;min-height:100vh;background:var(--bg-secondary);">
+  <div class="container py-4">
+    <div class="d-flex align-items-center mb-4">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost btn-sm me-2">
+        <i class="fas fa-arrow-left me-1"></i>Dashboard
+      </a>
+      <h4 class="mb-0">AI Chatbot History</h4>
+    </div>
+    <div class="row g-3">
+      {% for h in histories %}
+      <div class="col-12">
+        <div class="card-premium">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span style="font-weight:600;">Session: {{ h.session_id[:16] }}...</span>
+              {% if h.user_id %}<span class="ms-2 badge" style="background:var(--primary-light);color:var(--primary);font-size:11px;padding:3px 8px;border-radius:20px;">Registered User</span>{% endif %}
+            </div>
+            <span style="font-size:12px;color:var(--text-muted);">{{ h.updated_at.strftime('%b %d, %Y %H:%M') }}</span>
+          </div>
+          {% set msgs = h.get_messages() %}
+          <div style="max-height:200px;overflow-y:auto;background:var(--bg-secondary);border-radius:12px;padding:12px;">
+            {% for m in msgs[-6:] %}
+            <div class="mb-2 d-flex {% if m.role == 'user' %}justify-content-end{% endif %}">
+              <div style="max-width:75%;padding:8px 12px;border-radius:12px;font-size:13px;
+                           background:{% if m.role == 'user' %}var(--primary){% else %}var(--card-bg){% endif %};
+                           color:{% if m.role == 'user' %}white{% else %}var(--text){% endif %};
+                           border:{% if m.role == 'bot' %}1px solid var(--border){% else %}none{% endif %};">
+                {{ m.content[:200] }}{% if m.content|length > 200 %}...{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center py-5">
+        <i class="fas fa-robot fa-3x mb-3" style="color:var(--text-muted);opacity:0.3;"></i>
+        <p class="text-muted">No chat sessions yet</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

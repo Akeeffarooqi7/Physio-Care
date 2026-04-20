@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}{{ treatment.name }} | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container page-header-content">
+    <div class="breadcrumb-custom">
+      <a href="{{ url_for('main.index') }}">Home</a><span class="sep">/</span>
+      <a href="{{ url_for('main.treatments') }}">Treatments</a><span class="sep">/</span>
+      <span class="current">{{ treatment.name }}</span>
+    </div>
+    <div class="d-flex align-items-center gap-3 mt-2">
+      <div style="width:60px;height:60px;background:{{ treatment.color }}20;border-radius:14px;
+                   display:flex;align-items:center;justify-content:center;font-size:26px;color:{{ treatment.color }};">
+        <i class="fas {{ treatment.icon or 'fa-heartbeat' }}"></i>
+      </div>
+      <div>
+        <h1 class="section-title mb-1">{{ treatment.name }}</h1>
+        <span class="recovery-badge"><i class="fas fa-clock me-1"></i>Recovery: {{ treatment.recovery_time }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <!-- About -->
+        <div class="card-premium mb-4" data-aos="fade-up">
+          <h4 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>About This Condition</h4>
+          <p style="color:var(--text-secondary);line-height:1.75;font-size:16px;">{{ treatment.description }}</p>
+        </div>
+
+        <!-- Symptoms -->
+        <div class="card-premium mb-4" data-aos="fade-up">
+          <h4 class="mb-3"><i class="fas fa-list-check text-warning me-2"></i>Common Symptoms</h4>
+          <div class="row g-2">
+            {% for s in treatment.symptoms.split(',') %}
+            <div class="col-md-6">
+              <div class="d-flex gap-2 align-items-start p-2 rounded" style="background:var(--bg-secondary);">
+                <i class="fas fa-circle-check mt-1 flex-shrink-0" style="color:var(--secondary);font-size:14px;"></i>
+                <span style="font-size:14.5px;">{{ s.strip() }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Treatment Approach -->
+        <div class="card-premium mb-4" data-aos="fade-up">
+          <h4 class="mb-3"><i class="fas fa-user-md text-primary me-2"></i>Our Treatment Approach</h4>
+          <p style="color:var(--text-secondary);line-height:1.75;">{{ treatment.approach }}</p>
+        </div>
+
+        <!-- Exercises -->
+        {% if exercises %}
+        <div class="mb-4" data-aos="fade-up">
+          <h4 class="mb-4"><i class="fas fa-dumbbell text-success me-2"></i>Recommended Exercises</h4>
+          <div class="row g-3">
+            {% for ex in exercises %}
+            <div class="col-md-6">
+              <div class="exercise-card">
+                <div class="exercise-header">
+                  <div class="exercise-icon-wrap">
+                    <i class="fas fa-running"></i>
+                  </div>
+                  <div class="exercise-meta">
+                    <h5>{{ ex.title }}</h5>
+                    <div class="d-flex gap-2 align-items-center">
+                      <span class="badge-difficulty badge-{{ ex.difficulty }}">{{ ex.difficulty.title() }}</span>
+                      {% if ex.duration %}<span style="font-size:12px;color:var(--text-muted);"><i class="fas fa-clock me-1"></i>{{ ex.duration }}</span>{% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="exercise-body">
+                  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">{{ ex.description }}</p>
+                  {% if ex.get_instructions() %}
+                  <ol class="exercise-steps">
+                    {% for step in ex.get_instructions() %}
+                    <li><div class="step-num">{{ loop.index }}</div><span>{{ step }}</span></li>
+                    {% endfor %}
+                  </ol>
+                  {% endif %}
+                  {% if ex.precautions %}
+                  <div class="precaution-box">
+                    <i class="fas fa-exclamation-triangle flex-shrink-0 mt-1"></i>
+                    <span>{{ ex.precautions }}</span>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Diet Tips -->
+        {% if diet_tips %}
+        <div data-aos="fade-up">
+          <h4 class="mb-4"><i class="fas fa-apple-alt text-success me-2"></i>Diet Recommendations</h4>
+          <div class="row g-3">
+            {% for tip in diet_tips %}
+            <div class="col-md-6">
+              <div class="diet-card">
+                <span class="diet-emoji">{{ tip.icon }}</span>
+                <div class="diet-content">
+                  <h5>{{ tip.food_item }}</h5>
+                  <p>{{ tip.benefit }}</p>
+                  <span class="diet-badge">{{ tip.category }}</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div style="position:sticky;top:90px;" data-aos="fade-left">
+          <div class="card-premium mb-4">
+            <h5 class="mb-3">Book Treatment</h5>
+            <p class="text-muted mb-3" style="font-size:14px;">Ready to start your recovery? Book a consultation with {{ config.DOCTOR_NAME }}.</p>
+            <a href="{{ url_for('appointments.book') }}" class="btn btn-primary w-100">
+              <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+            </a>
+            <div class="divider"></div>
+            <a href="tel:{{ config.CLINIC_PHONE }}" class="btn btn-ghost w-100">
+              <i class="fas fa-phone me-2"></i>{{ config.CLINIC_PHONE }}
+            </a>
+            <a href="https://wa.me/{{ config.WHATSAPP_NUMBER }}" target="_blank" class="btn btn-wa w-100 mt-2">
+              <i class="fab fa-whatsapp me-2"></i>WhatsApp Us
+            </a>
+          </div>
+
+          <!-- Related treatments -->
+          {% if related %}
+          <div class="card-premium">
+            <h6 class="mb-3">Related Treatments</h6>
+            <div class="d-flex flex-column gap-2">
+              {% for r in related %}
+              <a href="{{ url_for('main.treatment_detail', slug=r.slug) }}"
+                 class="d-flex align-items-center gap-3 p-2 rounded text-decoration-none"
+                 style="background:var(--bg-secondary);transition:all 0.2s;"
+                 onmouseover="this.style.background='var(--primary-light)'"
+                 onmouseout="this.style.background='var(--bg-secondary)'">
+                <div style="width:36px;height:36px;background:{{ r.color }}20;border-radius:8px;
+                             display:flex;align-items:center;justify-content:center;color:{{ r.color }};font-size:16px;flex-shrink:0;">
+                  <i class="fas {{ r.icon or 'fa-heartbeat' }}"></i>
+                </div>
+                <span style="font-size:14px;font-weight:500;color:var(--text);">{{ r.name }}</span>
+                <i class="fas fa-arrow-right ms-auto text-muted" style="font-size:12px;"></i>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

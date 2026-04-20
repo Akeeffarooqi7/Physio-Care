@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% block title %}Book Appointment | {{ config.CLINIC_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container page-header-content">
+    <div class="breadcrumb-custom">
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <span class="sep">/</span>
+      <span class="current">Book Appointment</span>
+    </div>
+    <div class="section-tag"><i class="fas fa-calendar-plus"></i> Easy Booking</div>
+    <h1 class="section-title mt-2">Schedule Your <span>Appointment</span></h1>
+    <p class="section-subtitle">Choose your preferred date, time and consultation type. We'll confirm within 2 hours.</p>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Booking Form -->
+      <div class="col-lg-7">
+        <div class="appt-form-wrap" data-aos="fade-right">
+          <h4 class="mb-1">Patient Information</h4>
+          <p class="text-muted mb-4" style="font-size:14px;">Fill in your details and we'll get back to you shortly.</p>
+
+          <form method="POST" action="{{ url_for('appointments.book') }}" id="bookingForm">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Full Name *</label>
+                <input type="text" name="patient_name" class="form-control-custom" placeholder="John Smith" required
+                       {% if current_user.is_authenticated %}value="{{ current_user.full_name }}"{% endif %}>
+              </div>
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Phone Number *</label>
+                <input type="tel" name="phone" class="form-control-custom" placeholder="+1 555 000 0000" required
+                       {% if current_user.is_authenticated %}value="{{ current_user.phone or '' }}"{% endif %}>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-floating-custom form-label">Email Address *</label>
+              <input type="email" name="email" class="form-control-custom" placeholder="you@example.com" required
+                     {% if current_user.is_authenticated %}value="{{ current_user.email }}"{% endif %}>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-floating-custom form-label">Describe Your Symptoms</label>
+              <textarea name="symptoms" class="form-control-custom" rows="3"
+                        placeholder="Describe your pain, how long you've had it, and what makes it better or worse..."></textarea>
+            </div>
+
+            <!-- Appointment Type -->
+            <div class="mb-4">
+              <label class="form-floating-custom form-label">Consultation Type *</label>
+              <div class="d-flex gap-3">
+                <label class="appt-type-option" style="flex:1;cursor:pointer;">
+                  <input type="radio" name="appointment_type" value="in-person" checked style="display:none;">
+                  <div class="appt-type-card" style="border:2px solid var(--border);border-radius:12px;padding:16px;
+                       text-align:center;transition:all 0.2s;cursor:pointer;" onclick="selectType(this,'in-person')">
+                    <i class="fas fa-hospital fa-2x mb-2" style="color:var(--primary)"></i>
+                    <div style="font-weight:600;font-size:14px;">In-Person</div>
+                    <div style="font-size:12px;color:var(--text-muted);">Full assessment</div>
+                  </div>
+                </label>
+                <label class="appt-type-option" style="flex:1;cursor:pointer;">
+                  <input type="radio" name="appointment_type" value="video" style="display:none;">
+                  <div class="appt-type-card" style="border:2px solid var(--border);border-radius:12px;padding:16px;
+                       text-align:center;transition:all 0.2s;cursor:pointer;" onclick="selectType(this,'video')">
+                    <i class="fas fa-video fa-2x mb-2" style="color:var(--secondary)"></i>
+                    <div style="font-weight:600;font-size:14px;">Video Call</div>
+                    <div style="font-size:12px;color:var(--text-muted);">From home</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Date & Time -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-5">
+                <label class="form-floating-custom form-label">Preferred Date *</label>
+                <input type="date" name="preferred_date" id="preferredDate" class="form-control-custom" required
+                       min="{{ min_date }}">
+              </div>
+              <div class="col-md-7">
+                <label class="form-floating-custom form-label">Preferred Time *</label>
+                <input type="hidden" name="preferred_time" id="preferredTimeInput" required>
+                <div id="slotsStatus" style="display:none;font-size:12.5px;font-weight:600;margin-bottom:8px;padding:6px 10px;background:var(--bg-secondary);border-radius:8px;"></div>
+                <div class="time-slots-grid" id="timeSlotsGrid">
+                  {% for slot in time_slots %}
+                  <div class="time-slot-btn" data-time="{{ slot }}" onclick="selectSlot(this)">
+                    {{ slot }}
+                  </div>
+                  {% endfor %}
+                </div>
+                <p style="font-size:11.5px;color:var(--text-muted);margin-top:6px;margin-bottom:0;">
+                  <i class="fas fa-info-circle me-1"></i>Slots refresh automatically. Crossed-out slots are already booked.
+                </p>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 btn-lg-custom" id="submitBtn">
+              <i class="fas fa-calendar-check me-2"></i>Confirm Appointment
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sidebar Info -->
+      <div class="col-lg-5">
+        <div data-aos="fade-left">
+
+          <!-- Doctor info card -->
+          <div class="card-premium mb-4">
+            <div class="d-flex gap-3 align-items-start">
+              <div style="width:64px;height:64px;background:linear-gradient(135deg,#2563eb,#10b981);
+                           border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-user-md fa-2x" style="color:white;"></i>
+              </div>
+              <div>
+                <h5 class="mb-1">{{ config.DOCTOR_NAME }}</h5>
+                <p class="text-muted mb-2" style="font-size:13px;">{{ config.DOCTOR_SPECIALTY }}</p>
+                <div class="d-flex gap-2">
+                  <span class="badge" style="background:var(--primary-light);color:var(--primary);font-size:11px;padding:4px 10px;border-radius:20px;">
+                    <i class="fas fa-star me-1"></i>4.9/5 Rating
+                  </span>
+                  <span class="badge" style="background:var(--secondary-light);color:var(--secondary-dark);font-size:11px;padding:4px 10px;border-radius:20px;">
+                    <i class="fas fa-users me-1"></i>5000+ Patients
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clinic hours -->
+          <div class="card-premium mb-4">
+            <h6 class="mb-3"><i class="fas fa-clock text-primary me-2"></i>Clinic Hours</h6>
+            <div class="d-flex flex-column gap-2">
+              {% for day, hours in [('Monday - Friday', '9:00 AM – 6:00 PM'), ('Saturday', '9:00 AM – 2:00 PM'), ('Sunday', 'Closed')] %}
+              <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color:var(--border-light)!important;">
+                <span style="font-size:14px;font-weight:500;">{{ day }}</span>
+                <span style="font-size:14px;color:{% if 'Closed' in hours %}var(--danger){% else %}var(--secondary){% endif %};font-weight:600;">
+                  {{ hours }}
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- What to expect -->
+          <div class="card-premium">
+            <h6 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>What to Expect</h6>
+            <ul class="list-unstyled d-flex flex-column gap-2">
+              {% for item in ['Confirmation call within 2 hours', 'Full assessment on first visit', 'Personalized treatment plan', 'Email appointment reminder', 'Bring any previous reports/scans'] %}
+              <li class="d-flex gap-2 align-items-start" style="font-size:14px;">
+                <i class="fas fa-check-circle mt-1 flex-shrink-0" style="color:var(--secondary);"></i>
+                <span>{{ item }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Emergency CTA -->
+          <div class="mt-4 p-4 text-center" style="background:linear-gradient(135deg,#fee2e2,#fecaca);
+               border-radius:16px;border:1px solid #fca5a5;">
+            <i class="fas fa-phone fa-2x text-danger mb-2"></i>
+            <h6 class="text-danger mb-1">Need Urgent Help?</h6>
+            <p style="font-size:13px;color:#991b1b;margin-bottom:12px;">For urgent physiotherapy care, call us directly.</p>
+            <a href="tel:{{ config.CLINIC_PHONE }}" class="btn btn-sm"
+               style="background:#ef4444;color:white;border-radius:999px;padding:8px 20px;font-size:13px;font-weight:600;">
+              <i class="fas fa-phone me-1"></i>{{ config.CLINIC_PHONE }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+// ---- Slot selection ----
+function selectSlot(el) {
+  if (el.classList.contains('booked')) return;
+  document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('preferredTimeInput').value = el.dataset.time;
+}
+
+// ---- Appointment type card ----
+function selectType(card, type) {
+  document.querySelectorAll('.appt-type-card').forEach(c => {
+    c.style.borderColor = 'var(--border)';
+    c.style.background = '';
+  });
+  card.style.borderColor = 'var(--primary)';
+  card.style.background = 'var(--primary-light)';
+}
+
+// ---- Fetch & apply booked slots for a given date ----
+async function refreshSlots(dateValue) {
+  if (!dateValue) return;
+  const statusEl = document.getElementById('slotsStatus');
+  if (statusEl) {
+    statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i>Checking availability...';
+    statusEl.style.display = 'block';
+  }
+  try {
+    const res = await fetch('/appointments/check-slots?date=' + dateValue);
+    const data = await res.json();
+    const currentSelected = document.getElementById('preferredTimeInput').value;
+    let selectedStillAvailable = false;
+
+    document.querySelectorAll('.time-slot-btn').forEach(btn => {
+      const time = btn.dataset.time;
+      btn.classList.remove('booked', 'selected');
+      if (data.booked.includes(time)) {
+        btn.classList.add('booked');
+        btn.title = 'Already booked';
+        // If this patient had it selected and it just got taken, clear it
+        if (time === currentSelected) {
+          document.getElementById('preferredTimeInput').value = '';
+          showSlotTakenWarning(time);
+        }
+      } else {
+        if (time === currentSelected) {
+          btn.classList.add('selected');
+          selectedStillAvailable = true;
+        }
+      }
+    });
+
+    const available = data.available ? data.available.length : 0;
+    if (statusEl) {
+      if (data.disabled) {
+        statusEl.innerHTML = '<i class="fas fa-ban me-1"></i>Bookings are currently disabled by the clinic. Please call us directly.';
+        statusEl.style.color = 'var(--danger)';
+      } else if (data.blocked) {
+        statusEl.innerHTML = '<i class="fas fa-calendar-times me-1"></i>This date is not available. Please choose a different date.';
+        statusEl.style.color = 'var(--danger)';
+      } else if (data.is_full || available === 0) {
+        statusEl.innerHTML = '<i class="fas fa-calendar-times me-1"></i>All slots are fully booked for this date. Please choose another day.';
+        statusEl.style.color = 'var(--danger)';
+      } else if (available <= 3) {
+        statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Only ' + available + ' slot' + (available === 1 ? '' : 's') + ' remaining — book fast!';
+        statusEl.style.color = '#d97706';
+      } else {
+        statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i>' + available + ' slot' + (available === 1 ? '' : 's') + ' available';
+        statusEl.style.color = 'var(--secondary)';
+      }
+    }
+  } catch(e) {
+    if (statusEl) statusEl.style.display = 'none';
+  }
+}
+
+function showSlotTakenWarning(time) {
+  const warn = document.createElement('div');
+  warn.className = 'flash-alert flash-warning';
+  warn.style.cssText = 'position:fixed;top:90px;right:20px;z-index:9999;max-width:360px;animation:slideInRight 0.4s ease;';
+  warn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i><strong>' + time + '</strong> was just booked by another patient. Please select a different slot.<button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;opacity:0.6;">×</button>';
+  document.body.appendChild(warn);
+  setTimeout(() => warn.remove(), 7000);
+}
+
+// ---- Date input: refresh slots on change ----
+const dateInput = document.getElementById('preferredDate');
+if (dateInput) {
+  dateInput.addEventListener('change', function() {
+    // Clear any previously selected slot when date changes
+    document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('selected', 'booked'));
+    document.getElementById('preferredTimeInput').value = '';
+    refreshSlots(this.value);
+  });
+}
+
+// ---- Auto-refresh every 30 seconds to keep slots in sync ----
+let autoRefreshTimer = null;
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoRefreshTimer = setInterval(() => {
+    const d = document.getElementById('preferredDate');
+    if (d && d.value) refreshSlots(d.value);
+  }, 30000);
+}
+function stopAutoRefresh() {
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+}
+
+// ---- Also refresh on tab/window focus (catches stale pages) ----
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const d = document.getElementById('preferredDate');
+    if (d && d.value) refreshSlots(d.value);
+  }
+});
+
+// ---- Form submission: re-verify slot isn't taken right before submit ----
+document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+  const time = document.getElementById('preferredTimeInput').value;
+  if (!time) {
+    e.preventDefault();
+    alert('Please select a time slot.');
+    return;
+  }
+  // One final live check before submitting
+  const dateVal = document.getElementById('preferredDate').value;
+  if (dateVal) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying slot...';
+    try {
+      const res = await fetch('/appointments/check-slots?date=' + dateVal);
+      const data = await res.json();
+      if (data.booked.includes(time)) {
+        // Slot got taken between page load and submit
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Confirm Appointment';
+        await refreshSlots(dateVal);
+        showSlotTakenWarning(time);
+      } else {
+        // Slot still free — submit
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Booking...';
+        this.submit();
+      }
+    } catch(err) {
+      // Network issue — let server handle it
+      this.submit();
+    }
+  }
+});
+
+// ---- Init ----
+document.querySelector('.appt-type-card').style.borderColor = 'var(--primary)';
+document.querySelector('.appt-type-card').style.background = 'var(--primary-light)';
+startAutoRefresh();
+</script>
+{% endblock %}

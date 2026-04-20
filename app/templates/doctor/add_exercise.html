@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Add Exercise | Doctor{% endblock %}
+{% block content %}
+<div style="padding-top:80px;min-height:100vh;background:var(--bg-secondary);">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div class="d-flex align-items-center mb-4">
+          <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-ghost btn-sm me-2">
+            <i class="fas fa-arrow-left me-1"></i>Dashboard
+          </a>
+          <h4 class="mb-0">Add New Exercise</h4>
+        </div>
+        <div class="card-premium p-4">
+          <form method="POST" action="{{ url_for('doctor.add_exercise') }}">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-floating-custom form-label">Exercise Title *</label>
+                <input type="text" name="title" class="form-control-custom" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-floating-custom form-label">Body Part</label>
+                <select name="body_part" class="form-control-custom">
+                  <option value="">Select</option>
+                  {% for p in ['back', 'neck', 'knee', 'shoulder', 'hip', 'ankle', 'full_body'] %}
+                  <option value="{{ p }}">{{ p.replace('_', ' ').title() }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Difficulty</label>
+                <select name="difficulty" class="form-control-custom">
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Duration</label>
+                <input type="text" name="duration" class="form-control-custom" placeholder="e.g. 10 minutes">
+              </div>
+              <div class="col-12">
+                <label class="form-floating-custom form-label">Description</label>
+                <textarea name="description" class="form-control-custom" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-floating-custom form-label">Step-by-Step Instructions (one per line)</label>
+                <textarea name="instructions" class="form-control-custom" rows="6" placeholder="Step 1: Lie on your back&#10;Step 2: ..."></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-floating-custom form-label">Benefits</label>
+                <textarea name="benefits" class="form-control-custom" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-floating-custom form-label">Safety Precautions</label>
+                <textarea name="precautions" class="form-control-custom" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-floating-custom form-label">Associated Treatment (optional)</label>
+                <select name="treatment_id" class="form-control-custom">
+                  <option value="">None</option>
+                  {% for t in treatments %}
+                  <option value="{{ t.id }}">{{ t.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="fas fa-plus me-2"></i>Add Exercise
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

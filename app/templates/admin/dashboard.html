@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+<div style="padding-top:80px;min-height:100vh;background:var(--bg-secondary);">
+  <div class="container-fluid py-4">
+    <div class="row g-0">
+
+      <!-- Sidebar -->
+      <div class="col-lg-2 d-none d-lg-block">
+        <div class="admin-sidebar">
+          <div class="mb-4">
+            <h6 style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;font-weight:700;padding:0 16px;">Admin Panel</h6>
+          </div>
+          {% for href, icon, label in [
+            (url_for('admin.dashboard'), 'fa-tachometer-alt', 'Dashboard'),
+            (url_for('admin.appointments'), 'fa-calendar-check', 'Appointments'),
+            (url_for('admin.appointment_settings'), 'fa-sliders-h', 'Availability'),
+            (url_for('admin.messages'), 'fa-envelope', 'Messages'),
+            (url_for('admin.treatments'), 'fa-stethoscope', 'Treatments'),
+            (url_for('admin.testimonials'), 'fa-star', 'Testimonials'),
+            (url_for('admin.chat_history'), 'fa-robot', 'Chat History'),
+            (url_for('admin.users'), 'fa-users', 'Patients'),
+            (url_for('main.index'), 'fa-globe', 'View Website')
+          ] %}
+          <a href="{{ href }}" class="admin-nav-link {% if request.endpoint == href.split('.')[-1] %}active{% endif %}">
+            <i class="fas {{ icon }}"></i> {{ label }}
+          </a>
+          {% endfor %}
+          <div class="mt-4 pt-4" style="border-top:1px solid var(--border);">
+            <a href="{{ url_for('auth.logout') }}" class="admin-nav-link text-danger">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main -->
+      <div class="col-lg-10">
+        <div class="px-4">
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+              <h4 class="mb-0">Dashboard Overview</h4>
+              <p class="text-muted mb-0" style="font-size:14px;">Welcome back, {{ current_user.first_name }}!</p>
+            </div>
+            <a href="{{ url_for('appointments.book') }}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i>New Appointment
+            </a>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="row g-3 mb-4">
+            {% for num, label, icon, color, bg in [
+              (stats.today_appointments, "Today's Appointments", 'fa-calendar-day', 'white', '#2563eb'),
+              (stats.pending_appointments, 'Pending Appointments', 'fa-clock', 'white', '#f59e0b'),
+              (stats.total_patients, 'Total Patients', 'fa-users', 'white', '#10b981'),
+              (stats.unread_messages, 'Unread Messages', 'fa-envelope', 'white', '#8b5cf6')
+            ] %}
+            <div class="col-6 col-xl-3">
+              <div class="stat-card">
+                <div class="stat-card-icon" style="background:{{ bg }}20;color:{{ bg }};">
+                  <i class="fas {{ icon }}"></i>
+                </div>
+                <div class="stat-card-info">
+                  <h3 style="color:{{ bg }};">{{ num }}</h3>
+                  <p>{{ label }}</p>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Quick Booking Toggle -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card-premium d-flex align-items-center justify-content-between flex-wrap gap-3" id="bookingToggleCard">
+                <div class="d-flex align-items-center gap-3">
+                  <div id="toggleIcon" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
+                    <i class="fas fa-calendar-check"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-0">Appointment Bookings</h6>
+                    <p class="mb-0" style="font-size:13px;color:var(--text-muted);" id="toggleStatus">Loading...</p>
+                  </div>
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                  <a href="{{ url_for('admin.appointment_settings') }}" class="btn btn-ghost btn-sm">
+                    <i class="fas fa-sliders-h me-1"></i>Full Settings
+                  </a>
+                  <button class="btn btn-sm" id="quickToggleBtn"
+                          style="padding:8px 20px;border-radius:999px;font-weight:700;font-size:13px;border:none;"
+                          onclick="quickToggleBookings()">
+                    Loading...
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+          function updateToggleUI(enabled) {
+            const btn = document.getElementById('quickToggleBtn');
+            const icon = document.getElementById('toggleIcon');
+            const status = document.getElementById('toggleStatus');
+            if (enabled) {
+              btn.style.background = '#10b981';
+              btn.style.color = 'white';
+              btn.innerHTML = '<i class="fas fa-check-circle me-1"></i>ENABLED';
+              icon.style.background = '#ecfdf5';
+              icon.style.color = '#10b981';
+              status.textContent = 'Patients can currently book appointments';
+            } else {
+              btn.style.background = '#ef4444';
+              btn.style.color = 'white';
+              btn.innerHTML = '<i class="fas fa-ban me-1"></i>DISABLED';
+              icon.style.background = '#fee2e2';
+              icon.style.color = '#ef4444';
+              status.textContent = 'Booking is currently turned off for patients';
+            }
+          }
+          // Init from server state
+          updateToggleUI({{ 'true' if stats.bookings_enabled else 'false' }});
+
+          async function quickToggleBookings() {
+            const btn = document.getElementById('quickToggleBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            try {
+              const res = await fetch('/admin/appointment-settings/toggle-bookings', { method: 'POST' });
+              const data = await res.json();
+              if (data.success) {
+                updateToggleUI(data.bookings_enabled);
+              }
+            } catch(e) {
+              alert('Failed to toggle. Please try again.');
+            } finally {
+              btn.disabled = false;
+            }
+          }
+          </script>
+
+          <!-- Recent Appointments -->
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="card-premium">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h5 class="mb-0">Recent Appointments</h5>
+                  <a href="{{ url_for('admin.appointments') }}" class="btn btn-sm btn-ghost">View All</a>
+                </div>
+                <div class="table-responsive">
+                  <table class="table" style="font-size:14px;">
+                    <thead>
+                      <tr style="color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">
+                        <th class="border-0 pb-2">Patient</th>
+                        <th class="border-0 pb-2">Date & Time</th>
+                        <th class="border-0 pb-2">Type</th>
+                        <th class="border-0 pb-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for a in recent_appointments %}
+                      <tr style="border-color:var(--border);">
+                        <td class="py-3">
+                          <div class="d-flex align-items-center gap-2">
+                            <div style="width:34px;height:34px;background:var(--primary-light);color:var(--primary);
+                                         border-radius:50%;display:flex;align-items:center;justify-content:center;
+                                         font-size:12px;font-weight:700;flex-shrink:0;">
+                              {{ a.patient_name[0] }}
+                            </div>
+                            <div>
+                              <div style="font-weight:600;">{{ a.patient_name }}</div>
+                              <div style="font-size:12px;color:var(--text-muted);">{{ a.email }}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="py-3">
+                          <div>{{ a.preferred_date.strftime('%b %d, %Y') }}</div>
+                          <div style="font-size:12px;color:var(--text-muted);">{{ a.preferred_time }}</div>
+                        </td>
+                        <td class="py-3">
+                          <span class="badge" style="background:var(--bg-secondary);color:var(--text-secondary);font-size:11px;padding:4px 10px;border-radius:20px;">
+                            {{ a.appointment_type.title() }}
+                          </span>
+                        </td>
+                        <td class="py-3">
+                          <span class="status-badge status-{{ a.status }}">{{ a.status.title() }}</span>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                      {% if not recent_appointments %}
+                      <tr><td colspan="4" class="text-center py-4 text-muted">No appointments yet</td></tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent messages -->
+            <div class="col-lg-4">
+              <div class="card-premium">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h5 class="mb-0">Recent Messages</h5>
+                  <a href="{{ url_for('admin.messages') }}" class="btn btn-sm btn-ghost">View All</a>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                  {% for m in recent_messages %}
+                  <div class="p-3 rounded {% if not m.is_read %}border-start border-primary border-3{% endif %}"
+                       style="background:var(--bg-secondary);">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <div style="font-weight:600;font-size:14px;">{{ m.name }}</div>
+                      {% if not m.is_read %}<span class="badge" style="background:#ef4444;color:white;font-size:10px;padding:3px 8px;">NEW</span>{% endif %}
+                    </div>
+                    <p style="font-size:13px;color:var(--text-muted);margin:0;">{{ m.message[:60] }}...</p>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">{{ m.created_at.strftime('%b %d, %Y') }}</div>
+                  </div>
+                  {% endfor %}
+                  {% if not recent_messages %}
+                  <p class="text-center text-muted py-3" style="font-size:14px;">No messages yet</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

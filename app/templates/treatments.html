@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Treatments | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container page-header-content">
+    <div class="breadcrumb-custom">
+      <a href="{{ url_for('main.index') }}">Home</a><span class="sep">/</span>
+      <span class="current">Treatments</span>
+    </div>
+    <div class="section-tag"><i class="fas fa-stethoscope"></i> What We Treat</div>
+    <h1 class="section-title mt-2">Expert <span>Physiotherapy</span> Treatments</h1>
+    <p class="section-subtitle">Evidence-based care for all musculoskeletal conditions, sports injuries, and rehabilitation needs.</p>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <!-- Filter tabs -->
+    <div class="tag-list justify-content-center mb-5" data-aos="fade-up">
+      <span class="tag active" data-filter="all">All Treatments</span>
+      {% set categories = treatments | map(attribute='category') | list | unique | list %}
+      {% for cat in categories %}
+      <span class="tag" data-filter="{{ cat }}">{{ cat }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="row g-4">
+      {% for t in treatments %}
+      <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index0 % 3 * 80 }}" data-category="{{ t.category }}">
+        <a href="{{ url_for('main.treatment_detail', slug=t.slug) }}" class="text-decoration-none h-100 d-flex">
+          <div class="treatment-card w-100">
+            <div class="treatment-icon-wrap" style="background:{{ t.color }}20;color:{{ t.color }};">
+              <i class="fas {{ t.icon or 'fa-heartbeat' }}"></i>
+            </div>
+            <h4>{{ t.name }}</h4>
+            <p>{{ t.description[:110] }}...</p>
+            <div class="mb-3">
+              <p class="text-muted" style="font-size:13px;margin-bottom:6px;"><strong>Common symptoms:</strong></p>
+              <p style="font-size:13px;color:var(--text-secondary);">{{ t.symptoms[:80] }}...</p>
+            </div>
+            <div class="treatment-meta">
+              <span class="recovery-badge"><i class="fas fa-clock"></i> {{ t.recovery_time }}</span>
+              <span class="ms-auto" style="color:var(--primary);font-size:13px;font-weight:600;">
+                Details <i class="fas fa-arrow-right ms-1"></i>
+              </span>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Book CTA -->
+    <div class="row justify-content-center mt-5">
+      <div class="col-lg-8">
+        <div class="cta-section" style="border-radius:24px;padding:50px 40px;">
+          <div class="text-center">
+            <h3 class="text-white mb-2">Not sure which treatment you need?</h3>
+            <p class="mb-4" style="color:rgba(255,255,255,0.85);">Book a consultation and let Dr. Johnson assess your condition and create a personalized plan.</p>
+            <a href="{{ url_for('appointments.book') }}" class="btn"
+               style="background:white;color:var(--primary);font-weight:700;padding:12px 28px;border-radius:999px;">
+              <i class="fas fa-calendar-plus me-2"></i>Book Consultation
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

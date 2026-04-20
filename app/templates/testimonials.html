@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Patient Reviews | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container page-header-content">
+    <div class="breadcrumb-custom">
+      <a href="{{ url_for('main.index') }}">Home</a><span class="sep">/</span>
+      <span class="current">Patient Reviews</span>
+    </div>
+    <div class="section-tag"><i class="fas fa-star"></i> Success Stories</div>
+    <h1 class="section-title mt-2">Real Patients, <span>Real Results</span></h1>
+    <p class="section-subtitle">Discover how physiotherapy has transformed the lives of thousands of our patients.</p>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <!-- Overall stats -->
+    <div class="row g-3 mb-5">
+      {% for num, label, icon, color in [
+        ('4.9/5', 'Average Rating', 'fa-star', '#f59e0b'),
+        ('500+', 'Reviews Received', 'fa-comments', '#2563eb'),
+        ('98%', 'Recommend Us', 'fa-thumbs-up', '#10b981'),
+        ('5000+', 'Lives Changed', 'fa-heart', '#ef4444')
+      ] %}
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+        <div class="card-premium text-center">
+          <i class="fas {{ icon }} mb-2" style="font-size:28px;color:{{ color }};"></i>
+          <div style="font-size:28px;font-weight:800;color:var(--text);">{{ num }}</div>
+          <div style="font-size:13px;color:var(--text-muted);">{{ label }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Testimonials grid -->
+    <div class="row g-4">
+      {% if testimonials %}
+        {% for t in testimonials %}
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index0 % 3 * 80 }}">
+          <div class="testimonial-card">
+            <div class="testimonial-quote">"</div>
+            <div class="star-rating">
+              {% for i in range(t.rating) %}<i class="fas fa-star"></i>{% endfor %}
+              {% for i in range(5 - t.rating) %}<i class="far fa-star"></i>{% endfor %}
+            </div>
+            <p class="testimonial-text">{{ t.review }}</p>
+            {% if t.recovery_story %}
+            <div class="mb-3 p-3 rounded" style="background:var(--bg-secondary);font-size:13px;color:var(--text-secondary);font-style:italic;border-left:3px solid var(--primary);">
+              {{ t.recovery_story[:200] }}{% if t.recovery_story|length > 200 %}...{% endif %}
+            </div>
+            {% endif %}
+            <div class="testimonial-author">
+              <div class="author-avatar" style="background:{{ t.avatar_color }};">
+                {{ t.patient_name[0] }}
+              </div>
+              <div class="author-info">
+                <h6>{{ t.patient_name }}</h6>
+                {% if t.occupation %}<span>{{ t.occupation }}</span>{% endif %}
+                <div><span class="condition-tag">{{ t.condition }}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="col-12 text-center py-5">
+        <i class="fas fa-star fa-3x mb-3" style="color:var(--text-muted);opacity:0.3;"></i>
+        <p class="text-muted">No reviews yet. Be the first to share your experience!</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Submit your own -->
+    <div class="row justify-content-center mt-5">
+      <div class="col-lg-7" data-aos="zoom-in">
+        <div class="card-premium text-center p-5">
+          <i class="fas fa-pen-to-square fa-3x mb-3" style="color:var(--primary);"></i>
+          <h4 class="mb-2">Share Your Recovery Story</h4>
+          <p class="text-muted mb-4">Your story could inspire someone else on their healing journey.</p>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+            <i class="fas fa-star me-2"></i>Submit Your Review
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-xl);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title">Submit Your Review</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="reviewForm">
+          <div class="mb-3">
+            <label class="form-floating-custom form-label">Your Name *</label>
+            <input type="text" name="patient_name" class="form-control-custom" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-floating-custom form-label">Condition Treated *</label>
+            <input type="text" name="condition" class="form-control-custom" placeholder="e.g. Back Pain" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-floating-custom form-label">Occupation</label>
+            <input type="text" name="occupation" class="form-control-custom" placeholder="e.g. Teacher">
+          </div>
+          <div class="mb-3">
+            <label class="form-floating-custom form-label">Rating *</label>
+            <select name="rating" class="form-control-custom" required>
+              <option value="5">⭐⭐⭐⭐⭐ Excellent (5/5)</option>
+              <option value="4">⭐⭐⭐⭐ Very Good (4/5)</option>
+              <option value="3">⭐⭐⭐ Good (3/5)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-floating-custom form-label">Your Review *</label>
+            <textarea name="review" class="form-control-custom" rows="4" required
+                      placeholder="Share your experience..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-paper-plane me-2"></i>Submit Review
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(this));
+  const btn = this.querySelector('[type="submit"]');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+  try {
+    const res = await fetch('/api/testimonial', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.success) {
+      bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+      showToast('Thank you! Your review has been submitted for approval.', 'success');
+      this.reset();
+    }
+  } catch(err) {
+    showToast('Failed to submit. Please try again.', 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Review';
+  }
+});
+</script>
+{% endblock %}

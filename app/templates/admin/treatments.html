@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Manage Treatments | Admin{% endblock %}
+{% block content %}
+<div style="padding-top:80px;min-height:100vh;background:var(--bg-secondary);">
+  <div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost btn-sm me-2">
+          <i class="fas fa-arrow-left me-1"></i>Dashboard
+        </a>
+        <h4 class="d-inline mb-0">Manage Treatments</h4>
+      </div>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTreatmentModal">
+        <i class="fas fa-plus me-2"></i>Add Treatment
+      </button>
+    </div>
+
+    <div class="row g-3">
+      {% for t in treatments %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card-premium">
+          <div class="d-flex gap-3 align-items-start mb-3">
+            <div style="width:48px;height:48px;background:{{ t.color }}20;color:{{ t.color }};
+                         border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">
+              <i class="fas {{ t.icon or 'fa-heartbeat' }}"></i>
+            </div>
+            <div class="flex-1">
+              <h6 class="mb-0">{{ t.name }}</h6>
+              <div style="font-size:12px;color:var(--text-muted);">{{ t.category }}</div>
+            </div>
+            <span class="badge" style="background:{% if t.is_active %}var(--secondary-light){% else %}var(--border){% endif %};
+                   color:{% if t.is_active %}var(--secondary-dark){% else %}var(--text-muted){% endif %};
+                   font-size:11px;padding:4px 8px;border-radius:20px;">
+              {% if t.is_active %}Active{% else %}Hidden{% endif %}
+            </span>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);">{{ t.description[:80] }}...</p>
+          <div class="d-flex gap-2 mt-2">
+            <a href="{{ url_for('main.treatment_detail', slug=t.slug) }}" class="btn btn-sm btn-ghost flex-1">
+              <i class="fas fa-eye me-1"></i>View
+            </a>
+            <button class="btn btn-sm {% if t.is_active %}btn-ghost{% else %}btn-primary{% endif %} flex-1 toggle-treatment"
+                    data-id="{{ t.id }}">
+              <i class="fas {{ 'fa-eye-slash' if t.is_active else 'fa-eye' }} me-1"></i>
+              {{ 'Hide' if t.is_active else 'Show' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Add Treatment Modal -->
+<div class="modal fade" id="addTreatmentModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Add New Treatment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{{ url_for('admin.add_treatment') }}">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-floating-custom form-label">Treatment Name *</label>
+              <input type="text" name="name" class="form-control-custom" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-floating-custom form-label">Category</label>
+              <input type="text" name="category" class="form-control-custom" placeholder="e.g. Spine & Core">
+            </div>
+            <div class="col-md-6">
+              <label class="form-floating-custom form-label">Recovery Time</label>
+              <input type="text" name="recovery_time" class="form-control-custom" placeholder="e.g. 4-8 weeks">
+            </div>
+            <div class="col-md-3">
+              <label class="form-floating-custom form-label">Icon (FA class)</label>
+              <input type="text" name="icon" class="form-control-custom" placeholder="fa-heartbeat">
+            </div>
+            <div class="col-md-3">
+              <label class="form-floating-custom form-label">Color</label>
+              <input type="color" name="color" class="form-control-custom" value="#2563eb">
+            </div>
+            <div class="col-12">
+              <label class="form-floating-custom form-label">Description *</label>
+              <textarea name="description" class="form-control-custom" rows="3" required></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-floating-custom form-label">Symptoms (comma-separated)</label>
+              <textarea name="symptoms" class="form-control-custom" rows="2"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-floating-custom form-label">Treatment Approach</label>
+              <textarea name="approach" class="form-control-custom" rows="2"></textarea>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary w-100">Add Treatment</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.toggle-treatment').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    const id = this.dataset.id;
+    const res = await fetch(`/admin/treatments/${id}/toggle`, { method: 'POST' });
+    const data = await res.json();
+    window.location.reload();
+  });
+});
+</script>
+{% endblock %}

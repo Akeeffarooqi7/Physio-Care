@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Manage Appointments | Admin{% endblock %}
+{% block content %}
+<div style="padding-top:80px;min-height:100vh;background:var(--bg-secondary);">
+  <div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost btn-sm me-2">
+          <i class="fas fa-arrow-left me-1"></i>Dashboard
+        </a>
+        <h4 class="d-inline mb-0">All Appointments</h4>
+      </div>
+      <div class="d-flex gap-2">
+        {% for s in ['all', 'pending', 'confirmed', 'completed', 'cancelled'] %}
+        <a href="{{ url_for('admin.appointments', status=s) }}"
+           class="btn btn-sm {% if status_filter == s %}btn-primary{% else %}btn-ghost{% endif %}">
+          {{ s.title() }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card-premium">
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:14px;">
+          <thead>
+            <tr style="color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">
+              <th class="border-0 pb-3">#ID</th>
+              <th class="border-0 pb-3">Patient</th>
+              <th class="border-0 pb-3">Contact</th>
+              <th class="border-0 pb-3">Date & Time</th>
+              <th class="border-0 pb-3">Type</th>
+              <th class="border-0 pb-3">Status</th>
+              <th class="border-0 pb-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in appointments %}
+            <tr style="border-color:var(--border);">
+              <td class="py-3 text-muted">#{{ a.id }}</td>
+              <td class="py-3">
+                <div style="font-weight:600;">{{ a.patient_name }}</div>
+                <div style="font-size:12px;color:var(--text-muted);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  {{ a.symptoms or 'No symptoms noted' }}
+                </div>
+              </td>
+              <td class="py-3">
+                <div style="font-size:13px;">{{ a.email }}</div>
+                <div style="font-size:13px;color:var(--text-muted);">{{ a.phone }}</div>
+              </td>
+              <td class="py-3">
+                <div>{{ a.preferred_date.strftime('%b %d, %Y') }}</div>
+                <div style="font-size:12px;color:var(--text-muted);">{{ a.preferred_time }}</div>
+              </td>
+              <td class="py-3">
+                <span class="badge" style="background:var(--bg-secondary);color:var(--text-secondary);padding:4px 10px;border-radius:20px;font-size:11px;">
+                  {{ a.appointment_type.title() }}
+                </span>
+              </td>
+              <td class="py-3">
+                <span class="status-badge status-{{ a.status }}">{{ a.status.title() }}</span>
+              </td>
+              <td class="py-3">
+                <button class="btn btn-sm btn-ghost" data-bs-toggle="modal" data-bs-target="#apptModal{{ a.id }}">
+                  <i class="fas fa-edit me-1"></i>Update
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+            {% if not appointments %}
+            <tr><td colspan="7" class="text-center py-5 text-muted">No appointments found</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== UPDATE MODALS (outside table to fix invalid HTML nesting) ===== -->
+{% for a in appointments %}
+<div class="modal fade" id="apptModal{{ a.id }}" tabindex="-1" aria-labelledby="apptModalLabel{{ a.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" id="apptModalLabel{{ a.id }}">
+          <i class="fas fa-calendar-check text-primary me-2"></i>Update Appointment #{{ a.id }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="mb-3 p-3 rounded" style="background:var(--bg-secondary);font-size:14px;">
+          <strong>{{ a.patient_name }}</strong> &mdash;
+          {{ a.preferred_date.strftime('%B %d, %Y') }} at {{ a.preferred_time }}
+          <span class="ms-2 status-badge status-{{ a.status }}">{{ a.status.title() }}</span>
+        </div>
+        <form method="POST" action="{{ url_for('admin.update_appointment', appt_id=a.id) }}">
+          <div class="mb-3">
+            <label class="form-floating-custom form-label">Status</label>
+            <select name="status" class="form-control-custom">
+              {% for s in ['pending', 'confirmed', 'completed', 'cancelled'] %}
+              <option value="{{ s }}" {% if a.status == s %}selected{% endif %}>{{ s.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-floating-custom form-label">Video Link <span style="color:var(--text-muted);font-weight:400;">(video consultations)</span></label>
+            <input type="url" name="video_link" class="form-control-custom"
+                   value="{{ a.video_link or '' }}" placeholder="https://meet.google.com/...">
+          </div>
+          <div class="mb-4">
+            <label class="form-floating-custom form-label">Doctor Notes</label>
+            <textarea name="doctor_notes" class="form-control-custom" rows="3"
+                      placeholder="Internal notes about this appointment...">{{ a.doctor_notes or '' }}</textarea>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-ghost flex-1" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary flex-2" style="flex:2;">
+              <i class="fas fa-save me-2"></i>Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

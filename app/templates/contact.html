@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Contact Us | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container page-header-content">
+    <div class="breadcrumb-custom">
+      <a href="{{ url_for('main.index') }}">Home</a><span class="sep">/</span>
+      <span class="current">Contact</span>
+    </div>
+    <div class="section-tag"><i class="fas fa-envelope"></i> Get In Touch</div>
+    <h1 class="section-title mt-2">We're Here to <span>Help You</span></h1>
+    <p class="section-subtitle">Reach out any time — we respond within 2 business hours.</p>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="d-flex flex-column gap-3" data-aos="fade-right">
+          {% for icon, color, title, content, link in [
+            ('fa-phone', '#2563eb', 'Phone', config.CLINIC_PHONE, 'tel:' + config.CLINIC_PHONE),
+            ('fa-envelope', '#10b981', 'Email', config.CLINIC_EMAIL, 'mailto:' + config.CLINIC_EMAIL),
+            ('fa-map-marker-alt', '#ef4444', 'Address', config.CLINIC_ADDRESS, '#map'),
+            ('fa-whatsapp fab', '#25d366', 'WhatsApp', 'Chat instantly via WhatsApp', 'https://wa.me/' + config.WHATSAPP_NUMBER)
+          ] %}
+          <div class="contact-card">
+            <div class="contact-icon" style="background:{{ color }}18;color:{{ color }};">
+              <i class="{{ 'fab' if 'fab' in icon else 'fas' }} {{ icon.replace(' fab','') }}"></i>
+            </div>
+            <div class="contact-info">
+              <h5>{{ title }}</h5>
+              <a href="{{ link }}" {% if 'http' in link %}target="_blank"{% endif %}>{{ content }}</a>
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- Hours -->
+          <div class="card-premium">
+            <h6 class="mb-3"><i class="fas fa-clock text-primary me-2"></i>Clinic Hours</h6>
+            {% for day, hours in [('Mon – Fri', '9:00 AM – 6:00 PM'), ('Saturday', '9:00 AM – 2:00 PM'), ('Sunday', 'Closed')] %}
+            <div class="d-flex justify-content-between py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:var(--border)!important;">
+              <span style="font-size:14px;">{{ day }}</span>
+              <span style="font-size:14px;font-weight:600;color:{% if 'Closed' in hours %}var(--danger){% else %}var(--secondary){% endif %};">{{ hours }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card-premium" data-aos="fade-left">
+          <h4 class="mb-1">Send a Message</h4>
+          <p class="text-muted mb-4" style="font-size:14px;">Fill the form and we'll reply within 2 hours during clinic hours.</p>
+          <form id="contactForm">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Your Name *</label>
+                <input type="text" name="name" class="form-control-custom" placeholder="John Smith" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Email Address *</label>
+                <input type="email" name="email" class="form-control-custom" placeholder="you@example.com" required>
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Phone Number</label>
+                <input type="tel" name="phone" class="form-control-custom" placeholder="+1 555 000 0000">
+              </div>
+              <div class="col-md-6">
+                <label class="form-floating-custom form-label">Subject</label>
+                <input type="text" name="subject" class="form-control-custom" placeholder="e.g. Appointment inquiry">
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="form-floating-custom form-label">Your Message *</label>
+              <textarea name="message" class="form-control-custom" rows="5" required
+                        placeholder="Describe your condition or question..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg-custom">
+              <i class="fas fa-paper-plane me-2"></i>Send Message
+            </button>
+          </form>
+        </div>
+
+        <!-- Map -->
+        <div class="map-embed mt-4" data-aos="fade-up">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.119763973046!3d40.69766374874431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sus!4v1640000000000!5m2!1sen!2sus"
+            width="100%" height="320" style="border:0;" allowfullscreen="" loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Appointments Unavailable | {{ config.CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="section-pad" style="min-height:70vh;display:flex;align-items:center;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 text-center" data-aos="zoom-in">
+        <div class="card-premium p-5">
+          <div style="width:90px;height:90px;background:#fef3c7;border-radius:50%;
+                       display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+            <i class="fas fa-calendar-times fa-2x" style="color:#d97706;"></i>
+          </div>
+          <h2 class="mb-3">Appointments Temporarily Unavailable</h2>
+          <p style="color:var(--text-secondary);font-size:16px;line-height:1.7;margin-bottom:28px;">
+            {{ message }}
+          </p>
+          <div class="divider"></div>
+          <p class="text-muted mb-4" style="font-size:14px;">
+            You can still reach us for urgent needs:
+          </p>
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="tel:{{ config.CLINIC_PHONE }}" class="btn btn-primary">
+              <i class="fas fa-phone me-2"></i>{{ config.CLINIC_PHONE }}
+            </a>
+            <a href="https://wa.me/{{ config.WHATSAPP_NUMBER }}?text=Hello%20I%20need%20an%20appointment" target="_blank" class="btn btn-wa">
+              <i class="fab fa-whatsapp me-2"></i>WhatsApp Us
+            </a>
+          </div>
+          <div class="mt-4">
+            <a href="{{ url_for('main.index') }}" class="text-muted" style="font-size:14px;">
+              <i class="fas fa-arrow-left me-1"></i>Back to Home
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
