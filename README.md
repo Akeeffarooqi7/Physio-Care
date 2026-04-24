@@ -1,138 +1,143 @@
-# Oriva — The Art of Dentistry
+# PhysioCare Clinic Website
 
-A premium, frontend-only landing site for **Oriva**, a fictional luxury dental atelier. Designed to feel like a ₹15L+ hospitality brand — quiet, precise, and art-directed — rather than a conventional clinic website.
+A full-featured physiotherapy clinic website built with Flask, featuring appointment booking, patient/doctor dashboards, an AI chatbot, exercise & diet recommendations, and an admin panel.
 
-> Crafting perfect smiles with precision.
 
-🌐 Live Demo
-https://oriva-dental-production.up.railway.app/
+## 🌐 Live Preview
+https://physio-care-production.up.railway.app/
 
----
 
-## Overview
-
-Oriva is a single-page, static website built with **HTML, Tailwind CSS, and vanilla JavaScript**, enhanced with **GSAP** for scroll-based motion. No backend, no build step, no framework — just open `index.html` and it runs.
-
-The design language draws from editorial print, quiet-luxury hospitality, and high-end cosmetic brands: an ivory canvas, soft-gold accents, Cormorant Garamond serif headings, and deliberately generous whitespace.
-
----
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-green?logo=flask&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?logo=bootstrap&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## Features
 
-### Sections
-- Fullscreen hero with Ken Burns background and staggered GSAP intro
-- Founder profile (*Dr. Arjun Veer*) with signature card + "Why Choose Us" pillars
-- Services grid — 8 disciplines with hover lift, gradient fill, and arrow reveal
-- Parallax studio quote
-- Draggable Before / After comparison slider (mouse + touch)
-- Four-tile hover-zoom case-study gallery
-- Auto-scrolling testimonial marquee on dark with glass cards
-- Three-article journal preview
-- Floating-label appointment form with animated SVG tick success modal
-- WhatsApp CTA + floating WhatsApp bubble
-- Desaturated Google Maps embed, hours, socials, dark footer with newsletter
+### Public
+- Responsive homepage with hero section, featured treatments, testimonials, and clinic stats
+- 8 treatment categories with detailed pages (symptoms, approach, recovery time)
+- Health guidance page with exercises and diet tips
+- Contact form with email, phone, and WhatsApp support
+- AI-powered **PhysioBot** chatbot covering 10+ conditions
+- Dark / light theme toggle
 
-### Interactions & Motion
-- Branded page loader with letter stagger and progress bar
-- Sticky blurring navbar with underline-grow nav links
-- Custom cursor glow (desktop)
-- Mobile hamburger with staggered menu reveal
-- Infinite marquee strip between hero and about
-- Scroll-reveal fades via `IntersectionObserver`
-- GSAP `ScrollTrigger` parallax on quote image
-- Subtle floating-orb ambience in the hero
-- Smooth anchor scrolling
+### Appointment Booking
+- 30-day availability calendar (Sundays excluded)
+- 14 time slots per day (9 AM - 5 PM) with real-time availability checking
+- Admin controls to block dates/slots and toggle bookings on or off
 
-### Design system
-- **Palette** — ivory, porcelain, ink, gold (soft / light / dark variants)
-- **Type** — Cormorant Garamond (display) + Inter (UI)
-- **Components** — glassmorphism cards, soft shadows, hairline dividers
-- **Responsive** down to 360px with a dedicated mobile menu
-- **SEO** — semantic landmarks, meta/OG tags, descriptive alts
+### Patient Portal
+- Registration, login, and profile management
+- View appointment history and past chat sessions
 
----
+### Doctor Dashboard
+- Today's and upcoming appointments (10-day view)
+- Appointment detail view with notes and status updates
+- Add exercises for patients
 
-## Tech stack
+### Admin Panel
+- CRUD management for treatments, testimonials, exercises, and diet tips
+- Appointment management with status filters
+- Contact message inbox with reply system
+- User management and clinic settings
+- Chat history viewer
 
-| Layer | Tool |
-|-------|------|
-| Markup | HTML5 |
-| Styling | Tailwind CSS (CDN) + custom CSS |
-| Motion | GSAP 3 + ScrollTrigger (CDN) |
-| Scripts | Vanilla JS (no bundler) |
-| Fonts | Google Fonts — Cormorant Garamond, Inter |
-| Imagery | Unsplash |
+## Tech Stack
 
-No package manager, no build pipeline — everything loads via CDN.
+| Layer | Technology |
+|-------|-----------|
+| Backend | Flask, SQLAlchemy, Flask-Login, Flask-Mail, Flask-Migrate |
+| Frontend | Jinja2, Bootstrap 5, Font Awesome, AOS animations |
+| Database | SQLite (dev) / PostgreSQL (prod) |
+| Auth | Bcrypt password hashing, role-based access (admin/doctor/patient) |
+| Server | Gunicorn |
 
----
+## Getting Started
 
-## Getting started
+### Prerequisites
 
-Clone and open:
+- Python 3.10+
+
+### Installation
 
 ```bash
-git clone https://github.com/<your-username>/oriva-dental.git
-cd oriva-dental
+# Clone the repository
+git clone https://github.com/<your-username>/physio_website.git
+cd physio_website
+
+# Create a virtual environment
+python -m venv venv
+source venv/bin/activate   # Linux/Mac
+venv\Scripts\activate      # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app (seeds the database on first run)
+python run.py
 ```
 
-Then either:
+The app will be available at **http://localhost:5000**.
 
-**Option A — open directly**
+### Default Accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@physiocare.com | admin123 |
+| Doctor | doctor@physiocare.com | doctor123 |
+| Patient | patient@demo.com | patient123 |
+
+## Configuration
+
+Configuration lives in `config.py`. Key settings can be overridden with environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SECRET_KEY` | Flask secret key | dev key (override in production) |
+| `DATABASE_URL` | PostgreSQL connection string | SQLite (`physio.db`) |
+| `MAIL_SERVER` | SMTP server | smtp.gmail.com |
+| `MAIL_PORT` | SMTP port | 587 |
+| `MAIL_USERNAME` | Email account | - |
+| `MAIL_PASSWORD` | Email password | - |
+
+## Project Structure
+
+```
+physio_website/
+├── run.py                  # Entry point & database seeding
+├── config.py               # App configuration
+├── Procfile                # Heroku deployment
+├── requirements.txt
+└── app/
+    ├── __init__.py         # App factory
+    ├── models.py           # 10 database models
+    ├── routes/
+    │   ├── main.py         # Public pages
+    │   ├── auth.py         # Authentication
+    │   ├── appointments.py # Booking system
+    │   ├── api.py          # Chatbot & contact API
+    │   ├── admin.py        # Admin dashboard
+    │   ├── doctor.py       # Doctor panel
+    │   └── patient.py      # Patient dashboard
+    ├── templates/          # Jinja2 templates
+    └── static/
+        ├── css/style.css   # Custom styling
+        ├── js/             # Main, chatbot & theme scripts
+        └── images/
+```
+
+## Deployment
+
+The app is configured for **Heroku** deployment out of the box:
+
 ```bash
-# macOS
-open index.html
-# Windows
-start index.html
+heroku create
+heroku config:set SECRET_KEY=<your-secret-key>
+heroku config:set DATABASE_URL=<your-postgres-url>
+git push heroku main
 ```
-
-**Option B — serve locally (recommended, for iframe + CORS behaviour)**
-```bash
-python -m http.server 5500
-# visit http://localhost:5500
-```
-
----
-
-## Project structure
-
-```
-oriva_dental/
-├── index.html          # All sections, markup, and SEO meta
-├── css/
-│   └── style.css       # Custom styles, animations, component styling
-├── js/
-│   └── main.js         # GSAP intros, scroll reveal, BA slider, form, menu
-└── README.md
-```
-
----
-
-## Customization
-
-- **Brand** — swap the logo SVG and `ORIVA` wordmark in the navbar and footer
-- **Palette** — edit the Tailwind `theme.extend.colors` block in `index.html`
-- **Images** — replace Unsplash URLs with your own CDN or local assets
-- **Contact** — the dummy phone `+91 00000 00000` and email are placeholders; swap them in the hero card, contact, footer, and `wa.me` links
-- **Founder** — update the profile image, name, credentials, and signature card text in the About section
-
----
-
-## Browser support
-
-Tested on recent Chrome, Safari, Firefox, and Edge. Uses modern features (`backdrop-filter`, CSS grid, `IntersectionObserver`, GSAP 3) — graceful on iOS Safari 14+ and Chrome 90+.
-
----
-
-## Credits
-
-- **Design & Development** — [Akeef Farooqi](https://www.linkedin.com/in/akeeffarooqi7/)
-- **Imagery** — [Unsplash](https://unsplash.com) contributors
-- **Typography** — [Google Fonts](https://fonts.google.com)
-- **Motion** — [GSAP](https://gsap.com) by GreenSock
-
----
 
 ## License
 
-Released under the **MIT License**. Oriva is a fictional brand created for portfolio and demonstration purposes — not affiliated with any real dental practice.
+This project is licensed under the MIT License.
