@@ -2,15 +2,15 @@
 
 A full-featured physiotherapy clinic website built with Flask, featuring appointment booking, patient/doctor dashboards, an AI chatbot, exercise & diet recommendations, and an admin panel.
 
-
-## 🌐 Live Preview
-https://physio-care-production.up.railway.app/
-
-
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-green?logo=flask&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?logo=bootstrap&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
+
+
+## 🌐 Live Preview
+https://physio-care-production.up.railway.app/
+
 
 ## Features
 
