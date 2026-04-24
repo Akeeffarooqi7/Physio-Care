@@ -63,7 +63,7 @@ https://physio-care-production.up.railway.app/
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/physio_website.git
+git clone https://github.com/akeeffarooqi7/physio_website.git
 cd physio_website
 
 # Create a virtual environment
@@ -78,7 +78,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-The app will be available at **http://localhost:5000**.
+The website will be available at **https://physio-care-production.up.railway.app/**.
 
 ### Default Accounts
 
